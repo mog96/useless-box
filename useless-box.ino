@@ -8,7 +8,7 @@ int lastLimitInput = LOW;
 bool abusingSwitch = false;
 int switchToggledCount = 0;
 int switchAbusedCount = 0;
-int cyclesSinceAbuseStarted  =0;
+unsigned long lastAbuse;
 
 int kNumTogglesBeforeAbuse = 5;
 int kNumAbuses = 5;
@@ -24,30 +24,32 @@ void setup() {
 }
 
 void loop() {
-//  if (abusingSwitch) {
-//    cyclesSinceAbuseStarted++;
-//    if (cyclesSinceAbuseStarted % 100000 == 0) {
-//
-//      Serial.print("ABUSE CYCLE ");
-//      Serial.print(cyclesSinceAbuseStarted);
-//    
-//      fingerForward();
-//    }
-//  }
+  if (abusingSwitch && millis() - lastAbuse >= 2000) {
+    switchAbusedCount++;
+    if (switchAbusedCount == kNumAbuses) {
+      abusingSwitch = false;
+    }
+    lastAbuse = millis();
+    
+    Serial.print("ABUSE #");
+    Serial.print(switchAbusedCount);
+    
+    fingerForward();
+    return;
+  }
   
   int limitInput = digitalRead(limitSwitch);
   int toggleInput = digitalRead(toggleSwitch);
 
-  if (toggleInput != lastToggleInput) {
-    if (toggleInput == HIGH) {
-      checkSwitch();
-      fingerForward();
-    } else { // toggleInput == LOW
-      if (limitInput == HIGH) {
-        fingerStop();
-      } else {
-        fingerReverse();
-      }
+  if (toggleInput == HIGH) {
+    if (toggleInput != lastToggleInput)
+    checkSwitch();
+    fingerForward();
+  } else { // toggleInput == LOW
+    if (limitInput == HIGH) {
+      fingerStop();
+    } else {
+      fingerReverse();
     }
   }
 
@@ -76,13 +78,13 @@ void checkSwitch() {
     if (switchToggledCount == kNumTogglesBeforeAbuse) {
       abusingSwitch = false;
       switchAbusedCount = 0;
-      cyclesSinceAbuseStarted = 0;
     }
     
   } else {
     switchToggledCount++;
     if (switchToggledCount == kNumTogglesBeforeAbuse) {
       abusingSwitch = true;
+      lastAbuse = millis();
       switchToggledCount = 0;
     }
 
