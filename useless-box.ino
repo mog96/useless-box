@@ -6,6 +6,8 @@ int toggleSwitch  = 5;
 int lastToggleInput = LOW;
 
 bool shy = false;
+bool angry = true;
+int kNumSwitchHitsWhenAngry = 5;
 
 void setup() {
   pinMode(leftInverter, OUTPUT);
@@ -43,6 +45,18 @@ void loop() {
     if (limitInput == HIGH) {
       fingerStop();
     } else {
+      if (toggleInput != lastToggleInput && angry) {
+        for (int i = 0; i < kNumSwitchHitsWhenAngry - 1; i++) {
+          unsigned long startTime = millis();
+          while (millis() - startTime < 150) {
+            fingerReverse();
+          }
+          startTime = millis();
+          while (millis() - startTime < 170) {
+            fingerForward();
+          }
+        }
+      }
       fingerReverse();
     }
   }
