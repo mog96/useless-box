@@ -3,11 +3,13 @@ int rightInverter = 3;
 int limitSwitch   = 4;
 int toggleSwitch  = 5;
 
-bool reverseCalled = false;
-int switchToggledCount = 0;
+int lastToggleInput = LOW;
+int lastLimitInput = LOW;
 bool abusingSwitch = false;
+int switchToggledCount = 0;
+int switchAbusedCount = 0;
 int kNumTogglesBeforeAbuse = 5;
-int cyclesSinceAbuseStart = 0;
+int kNumAbuses = 5;
 
 
 void setup() {
@@ -20,76 +22,66 @@ void setup() {
 }
 
 void loop() {
-  int limitInput = digitalRead(limitSwitch);
-  int toggleInput = digitalRead(toggleSwitch);
-
-  if (switchToggledCount == kNumTogglesBeforeAbuse) {
-    abusingSwitch == true;
-
-    Serial.println(switchToggledCount);
-    Serial.println(kNumTogglesBeforeAbuse);
-    Serial.println("START ABUSE");
-  }
-
   if (abusingSwitch) {
-    cyclesSinceAbuseStart++;
-    
-    Serial.print("ABUSE CYCLES: ");
-    Serial.println(cyclesSinceAbuseStart);
-    
-    if (switchToggledCount == 0) {
-      cyclesSinceAbuseStart = 0;
-      abusingSwitch = false;
-    }
-    if (cyclesSinceAbuseStart % 100 == 0) {
-      
-      Serial.print("ABUSING ");
-      Serial.println(switchToggledCount);
-      
-      if (toggleInput == HIGH) {
-        fingerForward();
-        switchToggledCount--;
-      } else {
-        fingerReverse();
-      }
-    }
     return;
   }
+  int limitInput = digitalRead(limitSwitch);
+  int toggleInput = digitalRead(toggleSwitch);
   
   if (toggleInput == HIGH) {
+    if (toggleInput != lastToggleInput) {
+      if (abusingSwitch) {
+        switchAbusedCount++;
+        abuseSwitch(kNumAbuses);
+        
+      } else {
+        switchToggledCount++;
+        if (switchToggledCount == kNumTogglesBeforeAbuse) {
+          abusingSwitch = true;
+          switchToggledCount = 0;
+        }
+
+        Serial.print("TOGGLE ");
+        Serial.println(switchToggledCount);
+      }
+    }
     fingerForward();
-  } else { // toggleInput == LOW {
+  } else { // toggleInput == LOW
     if (limitInput == HIGH) {
       fingerStop();
     } else {
-      if (!reverseCalled) {
-        fingerReverse();
-      }
+      fingerReverse();
     }
   }
+
+  lastToggleInput = toggleInput;
+  lastLimitInput = limitInput;
 }
 
 void fingerForward() {
-  reverseCalled = false;
   digitalWrite(leftInverter, HIGH);
   digitalWrite(rightInverter, LOW);
 }
 
 void fingerReverse() {
-  if (!abusingSwitch) {
-    
-    Serial.print("TOGGLES ");
-    Serial.println(switchToggledCount);
-    
-    switchToggledCount++;
-  }
   digitalWrite(leftInverter, LOW);
   digitalWrite(rightInverter, HIGH);
-  reverseCalled == true;
 }
 
 void fingerStop() {
   digitalWrite(leftInverter, HIGH);
   digitalWrite(rightInverter, HIGH);
+}
+
+void abuseSwitch(int times) {
+  for (int i = 0; i < times; i++) {
+    Serial.print("HIT ");
+    Serial.println(i);
+    fingerReverse();
+    delay(1000);
+    fingerForward();
+    delay(1000);
+  }
+  abusingSwitch = false;
 }
 
