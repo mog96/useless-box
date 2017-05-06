@@ -3,6 +3,10 @@ int rightInverter = 3;
 int limitSwitch   = 4;
 int toggleSwitch  = 5;
 
+int lastToggleInput = LOW;
+
+bool mischievous = true;
+
 void setup() {
   pinMode(leftInverter, OUTPUT);
   pinMode(rightInverter, OUTPUT);
@@ -31,6 +35,9 @@ void loop() {
   int toggleInput = digitalRead(toggleSwitch);
 
   if (toggleInput == HIGH) {
+    if (toggleInput != lastToggleInput && mischievous) {
+      delay(1000);
+    }
     fingerForward();
   } else { // toggleInput == LOW {
     if (limitInput == HIGH) {
@@ -39,4 +46,6 @@ void loop() {
       fingerReverse();
     }
   }
+
+  lastToggleInput = toggleInput;
 }
