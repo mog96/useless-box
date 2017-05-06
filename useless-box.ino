@@ -5,8 +5,8 @@ int toggleSwitch  = 5;
 
 int lastToggleInput = LOW;
 
-bool shy = false;
-bool angry = true;
+bool shy = false;                       // Toggle for shy mode. (Finger emerges after delay.)
+bool angry = false;                     // Toggle for angry mode. (Finger beats switch repeatedly.)
 int kNumSwitchHitsWhenAngry = 5;
 
 void setup() {
