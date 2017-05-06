@@ -8,6 +8,8 @@ int lastLimitInput = LOW;
 bool abusingSwitch = false;
 int switchToggledCount = 0;
 int switchAbusedCount = 0;
+int cyclesSinceAbuseStarted  =0;
+
 int kNumTogglesBeforeAbuse = 5;
 int kNumAbuses = 5;
 
@@ -22,35 +24,30 @@ void setup() {
 }
 
 void loop() {
-  if (abusingSwitch) {
-    return;
-  }
+//  if (abusingSwitch) {
+//    cyclesSinceAbuseStarted++;
+//    if (cyclesSinceAbuseStarted % 100000 == 0) {
+//
+//      Serial.print("ABUSE CYCLE ");
+//      Serial.print(cyclesSinceAbuseStarted);
+//    
+//      fingerForward();
+//    }
+//  }
+  
   int limitInput = digitalRead(limitSwitch);
   int toggleInput = digitalRead(toggleSwitch);
-  
-  if (toggleInput == HIGH) {
-    if (toggleInput != lastToggleInput) {
-      if (abusingSwitch) {
-        switchAbusedCount++;
-        abuseSwitch(kNumAbuses);
-        
-      } else {
-        switchToggledCount++;
-        if (switchToggledCount == kNumTogglesBeforeAbuse) {
-          abusingSwitch = true;
-          switchToggledCount = 0;
-        }
 
-        Serial.print("TOGGLE ");
-        Serial.println(switchToggledCount);
+  if (toggleInput != lastToggleInput) {
+    if (toggleInput == HIGH) {
+      checkSwitch();
+      fingerForward();
+    } else { // toggleInput == LOW
+      if (limitInput == HIGH) {
+        fingerStop();
+      } else {
+        fingerReverse();
       }
-    }
-    fingerForward();
-  } else { // toggleInput == LOW
-    if (limitInput == HIGH) {
-      fingerStop();
-    } else {
-      fingerReverse();
     }
   }
 
@@ -73,15 +70,24 @@ void fingerStop() {
   digitalWrite(rightInverter, HIGH);
 }
 
-void abuseSwitch(int times) {
-  for (int i = 0; i < times; i++) {
-    Serial.print("HIT ");
-    Serial.println(i);
-    fingerReverse();
-    delay(1000);
-    fingerForward();
-    delay(1000);
+void checkSwitch() {
+  if (abusingSwitch) {
+    switchAbusedCount++;
+    if (switchToggledCount == kNumTogglesBeforeAbuse) {
+      abusingSwitch = false;
+      switchAbusedCount = 0;
+      cyclesSinceAbuseStarted = 0;
+    }
+    
+  } else {
+    switchToggledCount++;
+    if (switchToggledCount == kNumTogglesBeforeAbuse) {
+      abusingSwitch = true;
+      switchToggledCount = 0;
+    }
+
+    Serial.print("TOGGLE ");
+    Serial.println(switchToggledCount);
   }
-  abusingSwitch = false;
 }
 
