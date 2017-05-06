@@ -5,7 +5,7 @@ int toggleSwitch  = 5;
 
 int lastToggleInput = LOW;
 
-bool mischievous = true;
+bool shy = false;
 
 void setup() {
   pinMode(leftInverter, OUTPUT);
@@ -35,7 +35,7 @@ void loop() {
   int toggleInput = digitalRead(toggleSwitch);
 
   if (toggleInput == HIGH) {
-    if (toggleInput != lastToggleInput && mischievous) {
+    if (toggleInput != lastToggleInput && shy) {
       delay(1000);
     }
     fingerForward();
