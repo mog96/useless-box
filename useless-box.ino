@@ -3,6 +3,7 @@ int rightInverter = 3;
 int limitSwitch   = 4;
 int toggleSwitch  = 5;
 
+bool reverseCalled = false;
 int switchToggledCount = 0;
 bool abusingSwitch = false;
 int kNumTogglesBeforeAbuse = 5;
@@ -24,7 +25,9 @@ void loop() {
 
   if (switchToggledCount == kNumTogglesBeforeAbuse) {
     abusingSwitch == true;
-    
+
+    Serial.println(switchToggledCount);
+    Serial.println(kNumTogglesBeforeAbuse);
     Serial.println("START ABUSE");
   }
 
@@ -38,7 +41,7 @@ void loop() {
       cyclesSinceAbuseStart = 0;
       abusingSwitch = false;
     }
-    if (cyclesSinceAbuseStart % 50 == 0) {
+    if (cyclesSinceAbuseStart % 100 == 0) {
       
       Serial.print("ABUSING ");
       Serial.println(switchToggledCount);
@@ -59,22 +62,30 @@ void loop() {
     if (limitInput == HIGH) {
       fingerStop();
     } else {
-      if (!abusingSwitch) {
-        switchToggledCount++;
+      if (!reverseCalled) {
+        fingerReverse();
       }
-      fingerReverse();
     }
   }
 }
 
 void fingerForward() {
+  reverseCalled = false;
   digitalWrite(leftInverter, HIGH);
   digitalWrite(rightInverter, LOW);
 }
 
 void fingerReverse() {
+  if (!abusingSwitch) {
+    
+    Serial.print("TOGGLES ");
+    Serial.println(switchToggledCount);
+    
+    switchToggledCount++;
+  }
   digitalWrite(leftInverter, LOW);
   digitalWrite(rightInverter, HIGH);
+  reverseCalled == true;
 }
 
 void fingerStop() {
